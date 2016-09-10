@@ -3,21 +3,20 @@
 """Train tickets query via command-line.
 
 Usage:
-    tickets [-gdtkz] <from> <to> <date>
+    tickets <from> <to> <date> [ --s_code=<s_code> --s_time=<time> --zx=<zx> ]
 
 Options: 
-    -h,--help        显示帮助菜单
-    -g               高铁
-    -d               动车
-    -t               特快
-    -k               快速
-    -z               直达
+    -h,--help               显示帮助菜单
+    --s_code <s_code>       车次,可以选择一个或多个(用,分割)
+    --s_time <time>         发车时间
+    --zx <zx>               坐席,可以选择一个或多个(用,分割),默认是全部
+                            [sw:商务,tz:特等,zy:一等,ze:二等,gr:高级软卧,rw:软卧,yw:硬卧,rz:软座,yz:硬座,wz:无座]
+
 
 Example:
-    tickets 南京 北京 2016-07-01
-    tickets -dg 南京 北京 2016-07-01
+    tickets 上海 长春 2016-07-01
+    tickets 上海 长春 2016-07-01 --s_code='G1258,Z172' --s_time='18:00' --zx='yz,rz'
 """
-
 
 # 车次 				    出发车站 			到达车站 		发车时间 	商务 	特等 	一等 	二等 	高级软卧 	软卧 	硬卧 	软座 	硬座 	无座
 # station_train_code	from_station_name	to_station_name	start_time	swz_num	tz_num	zy_num	ze_num	gr_num		rw_num	yw_num	rz_num	yz_num	wz_num
