@@ -84,9 +84,28 @@ def format_print(data):
 
 
 def cli():
+    '''
+    返回一个字典,并且对车站，时间格式进行检查
+    {'--s_code': 'G123,',
+     '--s_time': '18:00',
+     '--zx': 'yz',
+     '<date>': '2016-09-21',
+     '<from>': '上海',
+     '<to>': '南京'
+    }
+    '''
+   
     arguments = docopt(__doc__)
+    
+    
     from_station = stations.get(arguments['<from>'])
+    arguments['<from>']=from_station
+    
+        
     to_station = stations.get(arguments['<to>'])
+    arguments['<to>']=to_station
+    
+    
     date = arguments['<date>']
     if from_station == None :
         print '出发地错误！'
@@ -112,11 +131,10 @@ def cli():
 
 if __name__ == '__main__': 
     arguments=cli()
-    from_station = stations.get(arguments['<from>'])
-    to_station = stations.get(arguments['<to>'])
+    from_station = arguments['<from>']
+    to_station = arguments['<to>']
     date = arguments['<date>']
     r = get_data(date,from_station,to_station)
     rows = data_pro(r)
     format_print(rows)
-
 
