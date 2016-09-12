@@ -53,6 +53,18 @@ def get_data(date,from_station,to_station):
 
 
 
+def baidu_gaojing(s_id,s_key,content):
+    url='http://gaojing.baidu.com/event/create'
+    data={'service_id': s_id, 'description': content, 'event_type': 'trigger'}
+    headers={'servicekey': s_key}
+    requests.post('http://gaojing.baidu.com/event/create', json=data, headers=headers)
+    
+    
+
+
+
+
+
 
 def data_pro(source_data):
     des_data=[]
@@ -80,6 +92,36 @@ def format_print(data):
     #print json.dumps(rows, encoding="UTF-8", ensure_ascii=False)
     #字典、列表、元组中有中文是打印的方法
     
+
+def monitor(data,cli_dict):
+    pass
+    
+def filter(data,cli_dict):
+    filter_data=[]
+    if cli_dict['--s_time'] != None:
+        for i in data:
+            i_start_time=i['start_time']
+            if i_start_time == u'24:00':
+                i_start_time=u'23:59'
+            if time.mktime(time.strptime(i_start_time,'%H:%M')) >= time.mktime(time.strptime(cli_dict['--s_time'],'%H:%M')):
+                filter_data.append(i)
+        if len(filter_data) == 0:
+            return filter_data
+    else:
+        filter_data=data
+    if cli_dict['--s_code'] != None:
+            for i in range(len(filter_data)-1,-1,-1):
+                if filter_data[i]['station_train_code'] not in cli_dict['--s_code'] :
+                    filter_data.pop(i)
+            if len(filter_data) == 0:
+                return filter_data
+    return filter_data
+    
+                
+                
+                
+                
+                
 
 
 
@@ -136,5 +178,6 @@ if __name__ == '__main__':
     date = arguments['<date>']
     r = get_data(date,from_station,to_station)
     rows = data_pro(r)
-    format_print(rows)
+    rows2 = filter(rows,arguments)
+    format_print(rows2)
 
