@@ -10,7 +10,7 @@ Options:
     --s_code <s_code>       车次,可以选择一个或多个(用,分割)
     --s_time <time>         发车时间
     --zx <zx>               坐席,可以选择一个或多个(用,分割),默认是全部
-                            [sw:商务,tz:特等,zy:一等,ze:二等,gr:高级软卧,rw:软卧,yw:硬卧,rz:软座,yz:硬座,wz:无座]
+                            [swz:商务,tz:特等,zy:一等,ze:二等,gr:高级软卧,rw:软卧,yw:硬卧,rz:软座,yz:硬座,wz:无座]
 
 
 Example:
@@ -61,11 +61,6 @@ def baidu_gaojing(s_id,s_key,content):
     
     
 
-
-
-
-
-
 def data_pro(source_data):
     des_data=[]
     data_row={}
@@ -94,7 +89,21 @@ def format_print(data):
     
 
 def monitor(data,cli_dict):
-    pass
+    '''
+    return 0 有票
+    return 1 没票
+    '''
+    for i in data:
+        if cli_dict['--zx'] == None:
+            cli_dict['--zx']='swz,tz,zy,ze,gr,rw,yw,rz,yz,wz'
+        for j in cli_dict['--zx'].split(','):
+            if i[j+'_num'] != u'无' and i[j+'_num'] != u'--' and i[j+'_num'] != u'*':
+#                baidu_gaojing(5717,'c96271e423e13a1adfe56dd2cbabe9bf','有票了')
+                return 0
+    return 1
+        
+    
+
     
 def filter(data,cli_dict):
     filter_data=[]
@@ -176,8 +185,71 @@ if __name__ == '__main__':
     from_station = arguments['<from>']
     to_station = arguments['<to>']
     date = arguments['<date>']
-    r = get_data(date,from_station,to_station)
-    rows = data_pro(r)
-    rows2 = filter(rows,arguments)
-    format_print(rows2)
+
+    current_time=time.time()
+    flag_baidu=0
+    count_baidu=0
+    
+    count_12306=0
+    flag_12306=0
+    
+
+    
+    while True:
+
+        try:
+            r = get_data(date,from_station,to_station)
+        except:
+            #print '数据获取失败'
+            time.sleep(0.5)
+            count_12306=count_12306+1
+            if count_12306>50 and flag_12306 == 0:
+                flag_12306=1
+                baidu_gaojing(5717,'c96271e423e13a1adfe56dd2cbabe9bf','12306接口无法连接！')
+            elif count_12306 > 100:
+                count_12306=0
+                flag_12306=0
+            continue
+
+
+        try:
+            rows = data_pro(r)
+        except:
+            #print '数据整理失败'
+            continue
+        if len(rows) == 0:            
+            continue
+
+      
+        
+        if arguments['--s_code'] == None and arguments['--s_time'] == None and arguments['--zx'] == None:
+            format_print(rows)
+            exit(0)
+            
+        print 'filter'
+        rows_filter = filter(rows,arguments)
+        if len(rows_filter) == 0:
+             print '没有找到符合条件的车次！'
+             exit(1)
+            
+
+        print 'monitor'
+        return_value=monitor(rows_filter,arguments)
+        print 'format_print'
+        count_baidu=count_baidu+1
+#        while return_value == 0:
+#            if flag_baidu == 0:
+#                flag_baidu=count_baidu
+#            elif count_baidu == (flag_baidu + 1):
+#                baidu_gaojing(5717,'c96271e423e13a1adfe56dd2cbabe9bf','有票了！')
+#                current_time=time.time()
+#            elif time.time()>=(current_time+3600) and flag_baidu != 0:
+#                count_baidu=0
+#                flag_baidu=0
+#                current_time=time.time()
+#            else:
+#                pass
+
+        format_print(rows_filter)
+        time.sleep(2)
 
