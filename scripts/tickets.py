@@ -60,6 +60,18 @@ def baidu_gaojing(s_id,s_key,content):
     requests.post('http://gaojing.baidu.com/event/create', json=data, headers=headers)
     
     
+    
+    
+def gaojing_check(s_id,s_key,content,last_time):
+    if time.time()>=(last_time+3600) and int(time.strftime('%H%M%S')) >=55500 and int(time.strftime('%H%M%S')) <=230000 :
+        baidu_gaojing(s_id,s_key,content)
+        return time.time()
+    else:
+        return last_time
+        
+
+    
+    
 
 def data_pro(source_data):
     des_data=[]
@@ -178,6 +190,7 @@ def cli():
     return arguments
    
 
+    
 
 
 if __name__ == '__main__': 
@@ -186,9 +199,9 @@ if __name__ == '__main__':
     to_station = arguments['<to>']
     date = arguments['<date>']
 
-    current_time=time.time()
+    last_time=time.time()-3600
     flag_baidu=0
-    count_baidu=0
+    count_baidu=1
     
     count_12306=0
     flag_12306=0
@@ -226,30 +239,26 @@ if __name__ == '__main__':
             format_print(rows)
             exit(0)
             
-        print 'filter'
         rows_filter = filter(rows,arguments)
         if len(rows_filter) == 0:
              print '没有找到符合条件的车次！'
              exit(1)
             
 
-        print 'monitor'
         return_value=monitor(rows_filter,arguments)
-        print 'format_print'
         count_baidu=count_baidu+1
-#        while return_value == 0:
-#            if flag_baidu == 0:
-#                flag_baidu=count_baidu
-#            elif count_baidu == (flag_baidu + 1):
-#                baidu_gaojing(5717,'c96271e423e13a1adfe56dd2cbabe9bf','有票了！')
-#                current_time=time.time()
-#            elif time.time()>=(current_time+3600) and flag_baidu != 0:
-#                count_baidu=0
-#                flag_baidu=0
-#                current_time=time.time()
-#            else:
-#                pass
-
+        if return_value == 0:
+            if count_baidu == (flag_baidu + 1):
+                last_time=gaojing_check(5717,'c96271e423e13a1adfe56dd2cbabe9bf','有票了！',last_time)
+                flag_baidu=0
+            else:
+                flag_baidu=count_baidu
+                
         format_print(rows_filter)
         time.sleep(2)
 
+
+
+'''
+http://www.jianshu.com/p/f411d7e10c41
+'''
